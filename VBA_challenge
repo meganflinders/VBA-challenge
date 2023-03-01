@@ -1,0 +1,111 @@
+Sub Stock_Data()
+'Loop through all worksheets
+For Each ws In Worksheets
+
+'Set Variables
+Dim Ticker As String
+Dim open_price As Double
+Dim close_price As Double
+Dim Yearly_change As Double
+Dim Percent_change As Double
+Dim Total_stock_volume As Double
+'Set variables for greatest increase/decrease/volume and ticker name
+Dim Greatest_increase As Double
+Dim Greatest_decrease As Double
+Dim Greatest_total As Double
+Dim Greatest_increase_ticker As String
+Dim Greatest_decrease_ticker As String
+Dim Greatest_total_ticker As String
+
+'Assign  values to variable  to start the loop
+Total_stock_volume = 0
+Dim Summary_Table_row As Integer
+Summary_Table_row = 2
+Dim Open_price_row As Long
+Open_price_row = 2
+
+'create headers
+ws.Range("I1").Value = "Ticker"
+ws.Range("J1").Value = "Yearly Change"
+ws.Range("K1").Value = "Percent Change"
+ws.Range("L1").Value = "Total Stock Volume"
+'Create headers for greatest table
+ws.Range("O2").Value = "Greatest % Increase"
+ws.Range("O3").Value = "Greatest % Decrease"
+ws.Range("O4").Value = "Greatest Total Volume"
+ws.Range("P1").Value = "Ticker"
+ws.Range("Q1").Value = "Value"
+
+Lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+For i = 2 To Lastrow
+    If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+        Ticker = ws.Cells(i, 1).Value
+        Total_stock_volume = Total_stock_volume + ws.Cells(i, 7).Value
+        'Print in summary table
+        ws.Range("I" & Summary_Table_row).Value = Ticker
+        ws.Range("L" & Summary_Table_row).Value = Total_stock_volume
+        'Find open price and close price to calculate yearly change
+        open_price = ws.Cells(Open_price_row, 3).Value
+        close_price = ws.Cells(i, 6).Value
+        Yearly_change = close_price - open_price
+        'Calculate percent change by dividing yearly price by open price; can't divide by 0
+            If open_price = 0 Then
+                Percent_change = 0
+            Else
+                Percent_change = Yearly_change / open_price
+            End If
+    'Print percent change and yearly change in summary
+    ws.Range("J" & Summary_Table_row).Value = Yearly_change
+    ws.Range("K" & Summary_Table_row).Value = Percent_change
+    'Format to percentage
+    ws.Range("K" & Summary_Table_row).NumberFormat = "0.00%"
+    'Conditional formatting positive change in green and negative change in red
+    If ws.Range("J" & Summary_Table_row).Value > 0 Then
+        ws.Range("J" & Summary_Table_row).Interior.ColorIndex = 4
+    Else
+        ws.Range("J" & Summary_Table_row).Interior.ColorIndex = 3
+    End If
+
+'Next row in summary table and open price row
+Summary_Table_row = Summary_Table_row + 1
+Open_price_row = i + 1
+'Reset total stock volume to 0
+Total_stock_volume = 0
+'Add to total stock volume
+Else
+    Total_stock_volume = Total_stock_volume + ws.Cells(i, 7).Value
+End If
+Next i
+    
+'Set values for greatest % increase/decrease/volume
+Greatest_increase = ws.Range("K2").Value
+Greatest_decrease = ws.Range("K2").Value
+Greatest_total = ws.Range("L2").Value
+
+'New loop to find greatest volume/increase/decrease
+Lastrow_summary = ws.Cells(Rows.Count, 9).End(xlUp).Row
+For j = 2 To Lastrow_summary
+    If ws.Cells(j + 1, 11).Value > Greatest_increase Then
+        Greatest_increase = ws.Cells(j + 1, 11).Value
+        Greatest_increase_ticker = ws.Cells(j + 1, 9).Value
+    ElseIf ws.Cells(j + 1, 11).Value < Greatest_decrease Then
+        Greatest_decrease = ws.Cells(j + 1, 11).Value
+        Greatest_decrease_ticker = ws.Cells(j + 1, 9).Value
+    ElseIf ws.Cells(j + 1, 12).Value > Greatest_total Then
+        Greatest_total = ws.Cells(j + 1, 12).Value
+        Greatest_total_ticker = ws.Cells(j + 1, 9).Value
+    End If
+Next j
+'Print greatest volume/increase/decrease in table
+ws.Range("P2").Value = Greatest_increase_ticker
+ws.Range("Q2").Value = Greatest_increase
+ws.Range("P3").Value = Greatest_decrease_ticker
+ws.Range("Q3").Value = Greatest_decrease
+ws.Range("P4").Value = Greatest_total_ticker
+ws.Range("Q4").Value = Greatest_total
+'Format greatest % increase/decrease to percentages
+ws.Range("Q2:Q3").NumberFormat = "0.00%"
+
+Next ws
+
+End Sub
